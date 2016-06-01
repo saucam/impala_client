@@ -1,0 +1,8 @@
+1. Compile:
+
+gradle build
+
+
+2. Running:
+
+gradle -q executeMain --debug

@@ -1,0 +1,40 @@
+apply plugin: 'scala'
+
+dependencies {
+      compile 'org.scala-lang:scala-library:2.11.1'
+      compile 'org.scalikejdbc:scalikejdbc-config_2.11:2.3.5'
+      compile 'org.scalikejdbc:scalikejdbc_2.11:2.3.5'
+      compile 'org.scalikejdbc:scalikejdbc-syntax-support-macro_2.11:2.3.5'
+      compile 'org.scalikejdbc:scalikejdbc-interpolation_2.11:2.3.5'
+      compile 'org.scalaz:scalaz-core_2.11:7.2.1'
+      compile 'org.scalaz:scalaz-concurrent_2.11:7.2.1'
+      compile fileTree(dir: 'libs', include: '*.jar')
+      compile group: 'com.google.guava', name: 'guava', version: '19.0'
+}
+
+repositories {
+      mavenCentral()
+}
+
+tasks.withType(ScalaCompile) {
+      configure(scalaCompileOptions.forkOptions) {
+            memoryMaximumSize = '1g'
+            jvmArgs = ['-XX:MaxPermSize=512m']
+      }
+}
+
+def jarPath = new ArrayList<String>()
+task setJarPath() << {
+      configurations.compile.each {
+            jarPath.add(it.toString())
+      }
+      println jarPath
+}
+
+task executeMain(type: Exec)  {
+      tasks.setJarPath.execute()
+      String paths = String.join(":", jarPath)
+      paths = paths + ":build/classes/main:src/main/resources/"
+      paths = "\"" + paths + "\""
+      commandLine 'scala', '-classpath', paths, 'com.impala.client.Main'
+}
